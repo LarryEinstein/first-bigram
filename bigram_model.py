@@ -28,17 +28,10 @@ print(decode(encode("hii there")))
 # how many times character i is followed by character j
 
 # Initialize the count matrix with zeros
-bigram_counts = torch.zeros((vocab_size, vocab_size), dtype=torch.int32)
-
-# Encode the entire text
-encoded_text = encode(text)
-
-# Count bigrams by going through consecutive character pairs
-print(f"Building bigram count matrix...")
-for i in range(len(encoded_text) - 1):
-    current_char = encoded_text[i]
-    next_char = encoded_text[i + 1]
-    bigram_counts[current_char, next_char] += 1
+encoded = torch.tensor(encode(text), dtype=torch.long)
+idx = encoded[:-1] * vocab_size + encoded[1:]
+bigram_counts = torch.bincount(idx, minlength=vocab_size**2)\
+                    .reshape(vocab_size, vocab_size)
 
 print(f"Bigram count matrix shape: {bigram_counts.shape}")
 print(f"Total bigrams counted: {bigram_counts.sum().item()}")
