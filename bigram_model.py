@@ -61,7 +61,7 @@ print(f"Matrix dimensions: {vocab_size} x {vocab_size}")
 
 # Convert counts to probabilities for text generation
 print(f"\nConverting counts to probabilities...")
-bigram_probs = bigram_counts.float()
+bigram_probs = (bigram_counts + 1).float()
 
 # Normalize each row to get probabilities (add small epsilon to avoid division by zero)
 row_sums = bigram_probs.sum(dim=1, keepdim=True)
@@ -401,4 +401,14 @@ print(f"The visualization includes:")
 print(f"  - Dataset statistics")
 print(f"  - Top 20 most common bigrams")
 print(f"  - Interactive heatmap of the full bigram matrix")
-print(f"  - Character frequency analysis") 
+print(f"  - Character frequency analysis")
+
+def sample_next(probs, temperature=1.0, top_k=None):
+    if temperature != 1.0:
+        probs = torch.log(probs + 1e-9) / temperature
+        probs = torch.softmax(probs, 0)
+    if top_k:
+        top_probs, top_idx = torch.topk(probs, top_k)
+        probs = torch.zeros_like(probs).scatter_(0, top_idx, top_probs)
+        probs /= probs.sum()
+    return torch.multinomial(probs, 1).item() 
